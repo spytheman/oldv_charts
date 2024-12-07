@@ -8,9 +8,13 @@ topic in the V discord server). Save it in the cloned folder, as `data.sqlite` .
 
 3. Run `v run .` .
 
-4.0. Goto: http://0.0.0.0:9009/index.html .
+4.
+    - Goto: http://0.0.0.0:9009/index.html, or
+    - Browse the `output/` folder.
 
-or 
 
-4.1. Browse the output/ folder .
+Online version
+===============================
+
+There's an online version currently available at https://fast.leodev.xyz
 
