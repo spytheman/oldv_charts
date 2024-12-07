@@ -1,5 +1,6 @@
 module main
 
+import os
 import db.sqlite
 
 struct Metric {
