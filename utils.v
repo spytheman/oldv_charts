@@ -76,7 +76,7 @@ fn metric_ms(row map[string]string, name string) Metric {
 
 fn get_measurements(max_n int, kind string) []Measurement {
 	mut res := []Measurement{}
-	mut db := sqlite.connect('data.sqlite') or { panic(err) }
+	mut db := sqlite.connect(os.getenv_opt('FAST_DB') or { 'data.sqlite' }) or { panic(err) }
 	rows := exec_map(mut db, 'SELECT
                                  commit_hash, state, ${kind}, date, tested,
                                  csize_mean, clines_mean,
