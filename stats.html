@@ -52,8 +52,8 @@
       label: "vlines/s",
       id: "vlines_ps",
       color: "#223322",
-      y: @{measurements.map(ms(it.vlines_ps.mean))},
-      d: @{measurements.map(ms(it.vlines_ps.stddev))},
+      y: @{measurements.map(it.vlines_ps.mean)},
+      d: @{measurements.map(it.vlines_ps.stddev)},
     },
     {
       label: "C Size",
