@@ -17,15 +17,34 @@ fn get_index() string {
 }
 
 pub struct App {
+	dynamic bool
 mut:
 	pages map[string]string
 }
 
+fn (app App) router(path string) ?string {
+	println('rendering $path')
+	match path {
+		'/', '/index.html' {
+			return get_index()
+		}
+		'/v_self.html' {
+			return get_stats('v self', 'v_self_default_id')
+		}
+		'/v_hello.html' {
+			return get_stats('v examples/hello_world.v', 'v_hello_default_id')
+		}
+		else {
+			return none
+		}
+	}
+}
+
 fn (mut app App) generate() ! {
-	app.pages = {
-		'output/index.html':   get_index()
-		'output/v_self.html':  get_stats('v self', 'v_self_default_id')
-		'output/v_hello.html': get_stats('v examples/hello_world.v', 'v_hello_default_id')
+	for prerender in ['/index.html', '/v_self.html', '/v_hello.html'] {
+		app.pages['output${prerender}'] = app.router(prerender) or {
+			panic('failed to pre-render: ${prerender}: ${err}')
+		}
 	}
 }
 
@@ -43,18 +62,25 @@ fn (app App) handle(req Request) Response {
 		})
 	}
 	dump(req.url)
-	if content := app.pages['output${req.url}'] {
+	if app.dynamic {
+		if content := app.router(req.url) {
+			res.status_code = 200
+			res.body = content
+			return res
+		}
+	} else if content := app.pages['output${req.url}'] {
 		res.status_code = 200
 		res.body = content
-	} else {
-		res.status_code = 404
-		res.body = 'Not found\n'
+		return res
 	}
+	res.status_code = 404
+	res.body = 'Not found\n'
 	return res
 }
 
 fn main() {
-	mut app := App{}
+	is_dynamic := arguments().contains('-dynamic')
+	mut app := App{dynamic: is_dynamic}
 	app.generate()!
 	app.save()!
 	mut server := Server{
