@@ -121,3 +121,24 @@ fn get_measurements(max_n int, kind string) []Measurement {
 fn ms(x i64) f64 {
 	return f64(x) / 1_000_000.0
 }
+
+fn dates_to_error_bar(dates []i64) []i64 {
+	mut head := dates.clone()
+	mut tail := dates.clone()
+	head << tail.reverse()
+	return head
+}
+
+fn metrics_stddev_to_error_bar(metrics []Metric) []i64 {
+	mut head := []i64{}
+	mut tail := []i64{}
+
+	for m in metrics {
+		mean := m.mean
+		head << mean + m.stddev
+		tail << mean - m.stddev
+	}
+
+	head << tail.reverse()
+	return head
+}
