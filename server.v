@@ -24,8 +24,8 @@ mut:
 fn (mut app App) generate() ! {
 	app.pages = {
 		'output/index.html':   get_index()
-		'output/v_self.html':  get_stats('v self', 'v_self_id')
-		'output/v_hello.html': get_stats('v examples/hello_world.v', 'v_hello_id')
+		'output/v_self.html':  get_stats('v self', 'v_self_default_id')
+		'output/v_hello.html': get_stats('v examples/hello_world.v', 'v_hello_default_id')
 	}
 }
 

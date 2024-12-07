@@ -3,6 +3,8 @@ module main
 import db.sqlite
 
 struct Metric {
+	min    i64
+	max    i64
 	mean   i64
 	stddev i64
 }
@@ -13,7 +15,13 @@ mut:
 	date         i64
 	tested       i64
 	csize        int
-	vlines       Metric
+	clines       int
+	vsize        int
+	vlines       int
+	vlines_ps    Metric
+	vtypes       int
+	vmodules     int
+	vfiles       int
 	scan         Metric
 	parse        Metric
 	check        Metric
@@ -41,6 +49,8 @@ fn exec_map(mut db sqlite.DB, query string) []map[string]string {
 
 fn metric(row map[string]string, name string) Metric {
 	return Metric{
+		min:    row['${name}_min'].i64()
+		max:    row['${name}_max'].i64()
 		mean:   row['${name}_mean'].i64()
 		stddev: row['${name}_stddev'].i64()
 	}
@@ -48,6 +58,8 @@ fn metric(row map[string]string, name string) Metric {
 
 fn metric_us(row map[string]string, name string) Metric {
 	return Metric{
+		min:    row['${name}_min'].i64() / 1_000
+		max:    row['${name}_max'].i64() / 1_000
 		mean:   row['${name}_mean'].i64() / 1_000
 		stddev: row['${name}_stddev'].i64() / 1_000
 	}
@@ -55,6 +67,8 @@ fn metric_us(row map[string]string, name string) Metric {
 
 fn metric_ms(row map[string]string, name string) Metric {
 	return Metric{
+		min:    row['${name}_min'].i64() / 1_000_000
+		max:    row['${name}_max'].i64() / 1_000_000
 		mean:   row['${name}_mean'].i64() / 1_000_000
 		stddev: row['${name}_stddev'].i64() / 1_000_000
 	}
@@ -64,28 +78,35 @@ fn get_measurements(max_n int, kind string) []Measurement {
 	mut res := []Measurement{}
 	mut db := sqlite.connect('data.sqlite') or { panic(err) }
 	rows := exec_map(mut db, 'SELECT
-                                 `commit`, state, ${kind}, date, tested,
-                                 csize_mean,
-                                 vlines_mean, vlines_stddev,
-                                 scan_mean, scan_stddev,
-                                 parse_mean, parse_stddev,
-                                 check_mean, check_stddev,
-                                 cgen_mean, cgen_stddev,
-                                 total_stages_mean, total_stages_stddev,
-                                 total_mean, total_stddev
+                                 commit_hash, state, ${kind}, date, tested,
+                                 csize_mean, clines_mean,
+                                 vsize_mean, vlines_mean, vtypes_mean, vmodules_mean, vfiles_mean,
+                                 vlines_ps_min, vlines_ps_max, vlines_ps_mean, vlines_ps_stddev,
+                                 scan_min, scan_max, scan_mean, scan_stddev,
+                                 parse_min, parse_max, parse_mean, parse_stddev,
+                                 check_min, check_max, check_mean, check_stddev,
+                                 cgen_min, cgen_max, cgen_mean, cgen_stddev,
+                                 total_stages_min, total_stages_max, total_stages_mean, total_stages_stddev,
+                                 total_min, total_max, total_mean, total_stddev
                               FROM commits
                               LEFT JOIN `measurements` ON commits.${kind} = measurements.id
-                              WHERE commits.state = 1
+                              WHERE commits.state = 1 AND commits.v_self_skip_unused_id IS NOT NULL AND commits.date > 1704063600
                               ORDER BY date desc
                               LIMIT 0,${max_n}
                               ')
 	for row in rows {
 		mut m := Measurement{}
-		m.commit = row['commit']
+		m.commit = row['commit_hash']
 		m.date = row['date'].i64() * 1000 // ts in ms
 		m.tested = row['tested'].i64() * 1000 // ts in ms
 		m.csize = row['csize_mean'].int()
-		m.vlines = metric(row, 'vlines')
+		m.clines = row['csize_mean'].int()
+		m.vsize = row['vsize_mean'].int()
+		m.vlines = row['vlines_mean'].int()
+		m.vlines_ps = metric(row, 'vlines_ps')
+		m.vtypes = row['vtypes_mean'].int()
+		m.vmodules = row['vmodules_mean'].int()
+		m.vfiles = row['vfiles_mean'].int()
 		m.scan = metric(row, 'scan')
 		m.parse = metric(row, 'parse')
 		m.check = metric(row, 'check')

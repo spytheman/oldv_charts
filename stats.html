@@ -1,5 +1,6 @@
 @include 'header.html'
 
+<h3>Stages, ms</h3><div id="stages_area"></div>
 <h3>CSize, bytes</h3><div id="csize_area"></div>
 <h3>VLines/s</h3><div id="vlines_area"></div>
 <h3>Scan, ms</h3><div id="scan_area"></div>
@@ -9,15 +10,75 @@
 <h3>Total, ms</h3><div id="total_area"></div>
 <script>
   Plotly.setPlotConfig({locale: 'en-US'});
-  Plotly.newPlot("csize_area", {
-      "data": [{
+  const csize_data = {
+      type: "scatter",
+      mode: "lines",
+      line: {color: '#070EFF'},
+      "x": @{measurements.map(it.date)},
+      name: 'C source size',
+      "y": @{measurements.map(it.csize)},
+  }
+  const vlines_data = {
+      type: "scatter",
+      mode: "lines",
+      line: {color: '#223322'},
+      "x": @{measurements.map(it.date)},
+      name: 'V lines/s',
+      "y": @{measurements.map(it.vlines_ps.mean)},
+  }
+  const scan_data = {
           type: "scatter",
           mode: "lines",
-          line: {color: '#070EFF'},
+          line: {color: '#FFD75E'},
           "x": @{measurements.map(it.date)},
-          name: 'C source size',
-          "y": @{measurements.map(it.csize)},
-      }],
+          name: 'Scan',
+          "y": @{measurements.map(ms(it.scan.mean))},
+  }
+  const parse_data = {
+          type: "scatter",
+          mode: "lines",
+          line: {color: '#11FFFF'},
+          "x": @{measurements.map(it.date)},
+          name: 'Parse',
+          "y": @{measurements.map(ms(it.parse.mean))},
+      }
+  const check_data = {
+          type: "scatter",
+          mode: "lines",
+          line: {color: '#FF2255'},
+          "x": @{measurements.map(it.date)},
+          name: 'Check',
+          "y": @{measurements.map(ms(it.check.mean))},
+      }
+  const cgen_data = {
+          type: "scatter",
+          mode: "lines",
+          line: {color: '#FF22FF'},
+          "x": @{measurements.map(it.date)},
+          name: 'Cgen',
+          "y": @{measurements.map(ms(it.cgen.mean))},
+      }
+  const total_data = {
+          type: "scatter",
+          mode: "lines",
+          line: {color: '#071EFF'},
+          "x": @{measurements.map(it.date)},
+          name: 'Total',
+          "y": @{measurements.map(ms(it.total.mean))},
+      }
+  Plotly.newPlot("stages_area", {
+      "data": [scan_data, parse_data, check_data, cgen_data],
+      "layout": {
+          "showlegend": true,
+          "width": 1800,
+          "height": 800,
+          xaxis: {
+              type: 'date',
+          },
+      }
+  });
+  Plotly.newPlot("csize_area", {
+      "data": [csize_data],
       "layout": {
           "showlegend": true,
           "width": 1800,
@@ -28,14 +89,7 @@
       }
   });
   Plotly.newPlot("vlines_area", {
-      "data": [{
-          type: "scatter",
-          mode: "lines",
-          line: {color: '#223322'},
-          "x": @{measurements.map(it.date)},
-          name: 'V lines/s',
-          "y": @{measurements.map(it.vlines.mean)},
-      }],
+      "data": [vlines_data],
       "layout": {
           "showlegend": true,
           "width": 1800,
@@ -46,14 +100,7 @@
       }
   });
   Plotly.newPlot("scan_area", {
-      "data": [{
-          type: "scatter",
-          mode: "lines",
-          line: {color: '#FFD75E'},
-          "x": @{measurements.map(it.date)},
-          name: 'Scan',
-          "y": @{measurements.map(ms(it.scan.mean))},
-      }],
+      "data": [scan_data],
       "layout": {
           "showlegend": true,
           "width": 1800,
@@ -64,14 +111,7 @@
       }
   });
   Plotly.newPlot("parse_area", {
-      "data": [{
-          type: "scatter",
-          mode: "lines",
-          line: {color: '#11FFFF'},
-          "x": @{measurements.map(it.date)},
-          name: 'Parse',
-          "y": @{measurements.map(ms(it.parse.mean))},
-      }],
+      "data": [parse_data],
       "layout": {
           "showlegend": true,
           "width": 1800,
@@ -82,14 +122,7 @@
       }
   });
   Plotly.newPlot("check_area", {
-      "data": [{
-          type: "scatter",
-          mode: "lines",
-          line: {color: '#FF2255'},
-          "x": @{measurements.map(it.date)},
-          name: 'Check',
-          "y": @{measurements.map(ms(it.check.mean))},
-      }],
+      "data": [check_data],
       "layout": {
           "showlegend": true,
           "width": 1800,
@@ -100,14 +133,7 @@
       }
   });
   Plotly.newPlot("cgen_area", {
-      "data": [{
-          type: "scatter",
-          mode: "lines",
-          line: {color: '#FF22FF'},
-          "x": @{measurements.map(it.date)},
-          name: 'Cgen',
-          "y": @{measurements.map(ms(it.cgen.mean))},
-      }],
+      "data": [cgen_data],
       "layout": {
           "showlegend": true,
           "width": 1800,
@@ -118,14 +144,7 @@
       }
   });
   Plotly.newPlot("total_area", {
-      "data": [{
-          type: "scatter",
-          mode: "lines",
-          line: {color: '#071EFF'},
-          "x": @{measurements.map(it.date)},
-          name: 'Total',
-          "y": @{measurements.map(ms(it.total.mean))},
-      }],
+      "data": [total_data],
       "layout": {
           "showlegend": true,
           "width": 1800,
