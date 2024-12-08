@@ -5,6 +5,8 @@ import net.http { Request, Response, Server }
 
 const max_points = 20_000
 
+const db_file = os.getenv_opt('FAST_DB') or { 'data.sqlite' }
+
 fn get_stats(title string, kind string) string {
 	measurements := get_measurements(max_points, kind)
 	res := $tmpl('stats.html')
@@ -23,7 +25,7 @@ mut:
 }
 
 fn (app App) router(path string) ?string {
-	println('rendering $path')
+	println('rendering ${path}')
 	match path {
 		'/', '/index.html' {
 			return get_index()
@@ -34,6 +36,9 @@ fn (app App) router(path string) ?string {
 		'/v_hello.html' {
 			return get_stats('v examples/hello_world.v', 'v_hello_default_id')
 		}
+		'/data.sqlite' {
+			return os.read_file(db_file) or { return none }
+		}
 		else {
 			return none
 		}
@@ -41,7 +46,10 @@ fn (app App) router(path string) ?string {
 }
 
 fn (mut app App) generate() ! {
-	for prerender in ['/index.html', '/v_self.html', '/v_hello.html'] {
+	if app.dynamic {
+		return
+	}
+	for prerender in ['/index.html', '/v_self.html', '/v_hello.html', '/data.sqlite'] {
 		app.pages['output${prerender}'] = app.router(prerender) or {
 			panic('failed to pre-render: ${prerender}: ${err}')
 		}
@@ -55,13 +63,18 @@ fn (mut app App) save() ! {
 	}
 }
 
-fn (app App) handle(req Request) Response {
+fn (mut app App) handle(req Request) Response {
 	mut res := Response{
 		header: http.new_header_from_map({
 			.content_type: 'text/html'
 		})
 	}
 	dump(req.url)
+	if !req.url.ends_with('.html') {
+		res.header = http.new_header_from_map({
+			.content_type: 'application/octet-stream'
+		})
+	}
 	if app.dynamic {
 		if content := app.router(req.url) {
 			res.status_code = 200
@@ -78,11 +91,7 @@ fn (app App) handle(req Request) Response {
 	return res
 }
 
-fn main() {
-	is_dynamic := arguments().contains('-dynamic')
-	mut app := App{dynamic: is_dynamic}
-	app.generate()!
-	app.save()!
+fn (mut app App) serve() ! {
 	mut server := Server{
 		handler: app
 	}
