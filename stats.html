@@ -2,7 +2,7 @@
 
 <h3>Stages, ms</h3><div id="stages_area"></div>
 <h3>CSize, bytes</h3><div id="csize_area"></div>
-<h3>VLines/s</h3><div id="vlines_area"></div>
+<h3>VLines/s</h3><div id="vlines_ps_area"></div>
 <h3>Scan, ms</h3><div id="scan_area"></div>
 <h3>Parse, ms</h3><div id="parse_area"></div>
 <h3>Check, ms</h3><div id="check_area"></div>
@@ -10,64 +10,87 @@
 <h3>Total, ms</h3><div id="total_area"></div>
 <script>
   Plotly.setPlotConfig({locale: 'en-US'});
-  const csize_data = {
+  const x = @{measurements.map(it.date)};
+  const x2 = [...x, ...x.toReversed()];
+  const raw_data = [
+    {
+      label: "Scan",
+      id: "scan",
+      color: "#FFD75E",
+      y: @{measurements.map(ms(it.scan.mean))},
+      d: @{measurements.map(ms(it.scan.stddev))},
+    },
+    {
+      label: "Parse",
+      id: "parse",
+      color: "#11FFFF",
+      y: @{measurements.map(ms(it.parse.mean))},
+      d: @{measurements.map(ms(it.parse.stddev))},
+    },
+    {
+      label: "Check",
+      id: "check",
+      color: "#FFD75E",
+      y: @{measurements.map(ms(it.check.mean))},
+      d: @{measurements.map(ms(it.check.stddev))},
+    },
+    {
+      label: "Code Generation",
+      id: "cgen",
+      color: "#FF22FF",
+      y: @{measurements.map(ms(it.cgen.mean))},
+      d: @{measurements.map(ms(it.cgen.stddev))},
+    },
+    {
+      label: "Total",
+      id: "total",
+      color: "#071EFF",
+      y: @{measurements.map(ms(it.total.mean))},
+      d: @{measurements.map(ms(it.total.stddev))},
+    },
+    {
+      label: "vlines/s",
+      id: "vlines_ps",
+      color: "#223322",
+      y: @{measurements.map(it.vlines_ps.mean)},
+      d: @{measurements.map(it.vlines_ps.stddev)},
+    },
+    {
+      label: "C Size",
+      id: "csize",
+      color: "#070EFF",
+      y: @{measurements.map(it.csize)}
+    }
+  ]
+
+  const data = {};
+  for(const d of raw_data) {
+    data[d.id] = {
       type: "scatter",
       mode: "lines",
-      line: {color: '#070EFF'},
-      "x": @{measurements.map(it.date)},
-      name: 'C source size',
-      "y": @{measurements.map(it.csize)},
+      line: {color: d.color},
+      name: d.label,
+      x,
+      y: d.y
+    }
+    if(d.d) {
+      data[d.id + "_error"] = {
+        type: "scatter",
+        name: d.label,
+        fill: "toself", 
+        fillcolor: d.color + "20", 
+        line: {color: "transparent"}, 
+        showlegend: false, 
+        x: x2,
+        y: [...d.y.map((x, i) => x + d.d[i]), ...d.y.map((x, i) => x - d.d[i]).reverse()]
+      }
+    }
   }
-  const vlines_data = {
-      type: "scatter",
-      mode: "lines",
-      line: {color: '#223322'},
-      "x": @{measurements.map(it.date)},
-      name: 'V lines/s',
-      "y": @{measurements.map(it.vlines_ps.mean)},
-  }
-  const scan_data = {
-          type: "scatter",
-          mode: "lines",
-          line: {color: '#FFD75E'},
-          "x": @{measurements.map(it.date)},
-          name: 'Scan',
-          "y": @{measurements.map(ms(it.scan.mean))},
-  }
-  const parse_data = {
-          type: "scatter",
-          mode: "lines",
-          line: {color: '#11FFFF'},
-          "x": @{measurements.map(it.date)},
-          name: 'Parse',
-          "y": @{measurements.map(ms(it.parse.mean))},
-      }
-  const check_data = {
-          type: "scatter",
-          mode: "lines",
-          line: {color: '#FF2255'},
-          "x": @{measurements.map(it.date)},
-          name: 'Check',
-          "y": @{measurements.map(ms(it.check.mean))},
-      }
-  const cgen_data = {
-          type: "scatter",
-          mode: "lines",
-          line: {color: '#FF22FF'},
-          "x": @{measurements.map(it.date)},
-          name: 'Cgen',
-          "y": @{measurements.map(ms(it.cgen.mean))},
-      }
-  const total_data = {
-          type: "scatter",
-          mode: "lines",
-          line: {color: '#071EFF'},
-          "x": @{measurements.map(it.date)},
-          name: 'Total',
-          "y": @{measurements.map(ms(it.total.mean))},
-      }
+
+  console.log(data)
+
   Plotly.newPlot("stages_area", {
-      "data": [scan_data, parse_data, check_data, cgen_data],
+      "data":  ["scan", "parse", "check", "cgen"].map(x => [data[x + "_error"], data[x]]).flat(), 
       "layout": {
           "showlegend": true,
           "width": 1800,
@@ -78,7 +101,7 @@
       }
   });
   Plotly.newPlot("csize_area", {
-      "data": [csize_data],
+      "data": [data.csize],
       "layout": {
           "showlegend": true,
           "width": 1800,
@@ -88,72 +111,19 @@
           },
       }
   });
-  Plotly.newPlot("vlines_area", {
-      "data": [vlines_data],
-      "layout": {
-          "showlegend": true,
-          "width": 1800,
-          "height": 800,
-          xaxis: {
-              type: 'date',
-          },
-      }
-  });
-  Plotly.newPlot("scan_area", {
-      "data": [scan_data],
-      "layout": {
-          "showlegend": true,
-          "width": 1800,
-          "height": 800,
-          xaxis: {
-              type: 'date',
-          },
-      }
-  });
-  Plotly.newPlot("parse_area", {
-      "data": [parse_data],
-      "layout": {
-          "showlegend": true,
-          "width": 1800,
-          "height": 800,
-          xaxis: {
-              type: 'date',
-          },
-      }
-  });
-  Plotly.newPlot("check_area", {
-      "data": [check_data],
-      "layout": {
-          "showlegend": true,
-          "width": 1800,
-          "height": 800,
-          xaxis: {
-              type: 'date',
-          },
-      }
-  });
-  Plotly.newPlot("cgen_area", {
-      "data": [cgen_data],
-      "layout": {
-          "showlegend": true,
-          "width": 1800,
-          "height": 800,
-          xaxis: {
-              type: 'date',
-          },
-      }
-  });
-  Plotly.newPlot("total_area", {
-      "data": [total_data],
-      "layout": {
-          "showlegend": true,
-          "width": 1800,
-          "height": 800,
-          xaxis: {
-              type: 'date',
-          },
-      }
-  });
+  for(const name of ["vlines_ps", "scan", "parse", "check", "cgen", "total"]) {
+    Plotly.newPlot(name + "_area", {
+        "data": [data[name + "_error"], data[name]],
+        "layout": {
+            "showlegend": true,
+            "width": 1800,
+            "height": 800,
+            xaxis: {
+                type: 'date',
+            },
+        }
+    });
+  }
 </script>
 
 @include 'footer.html'
