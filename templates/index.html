@@ -2,7 +2,13 @@
 <h1>Stats from compilations of previous V versions, using cmd/tools/oldv.v</h1>
 
 @for i, data in index_links
-<br><a href="@{i#[1..]}">@data.cmd</a>
+<br><a href="@{i#[1..]}">@data.cmd</a>,
+[<a href="@{i#[1..]}#vlines_ps">vlines_ps</a>],
+[<a href="@{i#[1..]}#scan">scan</a>],
+[<a href="@{i#[1..]}#parse">parse</a>],
+[<a href="@{i#[1..]}#check">check</a>],
+[<a href="@{i#[1..]}#cgen">cgen</a>],
+[<a href="@{i#[1..]}#total">total</a>]
 <br>
 <br>
 @end
