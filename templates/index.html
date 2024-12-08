@@ -1,0 +1,13 @@
+@include 'header.html'
+<h1>Stats from compilations of previous V versions, using cmd/tools/oldv.v</h1>
+
+@for i, data in index_links
+<br><a href="@{i#[1..]}">@data.cmd</a>
+<br>
+<br>
+@end
+
+<hr>
+<br><a href="data.sqlite">data.sqlite</a>, containing the raw data, so you can make your own charts.
+
+@include 'footer.html'
