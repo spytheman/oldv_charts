@@ -10,6 +10,7 @@
 <h3>Total, ms</h3><div id="total_area"></div>
 <script>
   Plotly.setPlotConfig({locale: 'en-US'});
+  const commits = @{measurements.map("Commit: ${it.commit}")};
   const x = @{measurements.map(it.date)};
   const x2 = [...x, ...x.toReversed()];
   const raw_data = [
@@ -59,7 +60,7 @@
       label: "C Size",
       id: "csize",
       color: "#070EFF",
-      y: @{measurements.map(it.csize)}
+      y: @{measurements.map(it.csize)},
     }
   ]
 
@@ -71,7 +72,8 @@
       line: {color: d.color},
       name: d.label,
       x,
-      y: d.y
+      y: d.y,
+	  text: commits,
     }
     if(d.d) {
       data[d.id + "_error"] = {
@@ -82,7 +84,7 @@
         line: {color: "transparent"}, 
         showlegend: false, 
         x: x2,
-        y: [...d.y.map((x, i) => x + d.d[i]), ...d.y.map((x, i) => x - d.d[i]).reverse()]
+        y: [...d.y.map((x, i) => x + d.d[i]), ...d.y.map((x, i) => x - d.d[i]).reverse()],
       }
     }
   }
