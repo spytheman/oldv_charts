@@ -52,7 +52,8 @@ fn (mut app App) generate() ! {
 	if app.dynamic {
 		return
 	}
-	for prerender in ['/index.html', '/v_self.html', '/v_hello.html', '/data.sqlite', '/favicon.ico'] {
+	for prerender in ['/', '/index.html', '/v_self.html', '/v_hello.html', '/data.sqlite',
+		'/favicon.ico'] {
 		app.pages['output${prerender}'] = app.router(prerender) or {
 			panic('failed to pre-render: ${prerender}: ${err}')
 		}
@@ -62,6 +63,9 @@ fn (mut app App) generate() ! {
 fn (mut app App) save() ! {
 	os.mkdir('output/') or {}
 	for k, v in app.pages {
+		if k == 'output/' {
+			continue
+		}
 		os.write_file(k, v)!
 	}
 }
