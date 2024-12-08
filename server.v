@@ -39,6 +39,9 @@ fn (app App) router(path string) ?string {
 		'/data.sqlite' {
 			return os.read_file(db_file) or { return none }
 		}
+		'/favicon.ico' {
+			return os.read_file('favicon.ico') or { return none }
+		}
 		else {
 			return none
 		}
@@ -49,7 +52,7 @@ fn (mut app App) generate() ! {
 	if app.dynamic {
 		return
 	}
-	for prerender in ['/index.html', '/v_self.html', '/v_hello.html', '/data.sqlite'] {
+	for prerender in ['/index.html', '/v_self.html', '/v_hello.html', '/data.sqlite', '/favicon.ico'] {
 		app.pages['output${prerender}'] = app.router(prerender) or {
 			panic('failed to pre-render: ${prerender}: ${err}')
 		}
@@ -66,13 +69,18 @@ fn (mut app App) save() ! {
 fn (mut app App) handle(req Request) Response {
 	mut res := Response{
 		header: http.new_header_from_map({
-			.content_type: 'text/html'
+			.content_type: 'application/octet-stream'
 		})
 	}
 	dump(req.url)
-	if !req.url.ends_with('.html') {
+	if req.url.ends_with('.html') || req.url == '/' {
 		res.header = http.new_header_from_map({
-			.content_type: 'application/octet-stream'
+			.content_type: 'text/html'
+		})
+	}
+	if req.url.ends_with('.ico') {
+		res.header = http.new_header_from_map({
+			.content_type: 'image/vnd.microsoft.icon'
 		})
 	}
 	if app.dynamic {
