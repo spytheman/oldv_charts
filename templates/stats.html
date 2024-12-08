@@ -1,16 +1,15 @@
 @include 'header.html'
 <h1>[<a href='index.html'>index</a>] Performance stats for <i>@title</i> :</h1>
 <div>
-	<h3>Stages, ms</h3><div id="stages_area"></div>
-	<h3>CSize, bytes</h3><div id="csize_area"></div>
-	<h3>VLines/s</h3><div id="vlines_ps_area"></div>
-	<h3>Scan, ms</h3><div id="scan_area"></div>
-	<h3>Parse, ms</h3><div id="parse_area"></div>
-	<h3>Check, ms</h3><div id="check_area"></div>
-	<h3>Cgen, ms</h3><div id="cgen_area"></div>
-	<h3>Total, ms</h3><div id="total_area"></div>
+	<h3 id='stages'>Stages, ms</h3><div id="stages_area"></div>
+	<h3 id='csize'>CSize, bytes</h3><div id="csize_area"></div>
+	<h3 id='vlines_ps'>VLines/s</h3><div id="vlines_ps_area"></div>
+	<h3 id='scan'>Scan, ms</h3><div id="scan_area"></div>
+	<h3 id='parse'>Parse, ms</h3><div id="parse_area"></div>
+	<h3 id='check'>Check, ms</h3><div id="check_area"></div>
+	<h3 id='cgen'>Cgen, ms</h3><div id="cgen_area"></div>
+	<h3 id='total'>Total, ms</h3><div id="total_area"></div>
 </div>
-
 <script>
   Plotly.setPlotConfig({locale: 'en-US'});
   const commits = @{measurements.map("Commit: ${it.commit}")};
