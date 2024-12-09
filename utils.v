@@ -25,6 +25,8 @@ mut:
 	scan         Metric
 	parse        Metric
 	check        Metric
+	transform    Metric
+	markused     Metric
 	cgen         Metric
 	total_stages Metric
 	total        Metric
@@ -85,6 +87,8 @@ fn get_measurements(max_n int, kind string) []Measurement {
                                  scan_min, scan_max, scan_mean, scan_stddev,
                                  parse_min, parse_max, parse_mean, parse_stddev,
                                  check_min, check_max, check_mean, check_stddev,
+                                 transform_min, transform_max, transform_mean, transform_stddev,
+                                 markused_min, markused_max, markused_mean, markused_stddev,
                                  cgen_min, cgen_max, cgen_mean, cgen_stddev,
                                  total_stages_min, total_stages_max, total_stages_mean, total_stages_stddev,
                                  total_min, total_max, total_mean, total_stddev
@@ -110,6 +114,8 @@ fn get_measurements(max_n int, kind string) []Measurement {
 		m.scan = metric(row, 'scan')
 		m.parse = metric(row, 'parse')
 		m.check = metric(row, 'check')
+		m.transform = metric(row, 'transform')
+		m.markused = metric(row, 'markused')
 		m.cgen = metric(row, 'cgen')
 		m.total_stages = metric(row, 'total_stages')
 		m.total = metric(row, 'total')
