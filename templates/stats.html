@@ -10,6 +10,8 @@
 	<h3 id='transform'>Transform, ms</h3><div id="transform_area"></div>
 	<h3 id='markused'>Markused, ms</h3><div id="markused_area"></div>
 	<h3 id='cgen'>Cgen, ms</h3><div id="cgen_area"></div>
+	<h3 id='fundamental'>Fundamental, ms = scan + parse + check + cgen</h3><div id="fundamental_area"></div>
+	<h3 id='misc'>Misc stages, ms = Total - Fundamental, ms</h3><div id="misc_area"></div>
 	<h3 id='total'>Total, ms</h3><div id="total_area"></div>
 </div>
 <script>
@@ -66,6 +68,20 @@
       color: "#071EFF",
       y: @{measurements.map(ms(it.total.mean))},
       d: @{measurements.map(ms(it.total.stddev))},
+    },
+    {
+      label: "Fundamental",
+      id: "fundamental",
+      color: "#22FF22",
+      y: @{measurements.map(ms(it.total_stages.mean))},
+      d: @{measurements.map(ms(it.total_stages.stddev))},
+    },
+    {
+      label: "Misc",
+      id: "misc",
+      color: "#0022AA",
+      y: @{measurements.map(ms(it.total.mean - it.total_stages.mean))},
+      d: @{measurements.map(ms(misc_stddev2(it.total.stddev,it.total_stages.stddev)))},
     },
     {
       label: "vlines/s",
@@ -131,7 +147,18 @@
           },
       }
   });
-  for(const name of ["vlines_ps", "scan", "parse", "check", "transform", "markused", "cgen", "total"]) {
+  for(const name of [
+     "vlines_ps",
+	 "scan", 
+	 "parse", 
+	 "check",
+     "transform", 
+	 "markused", 
+	 "cgen", 
+	 "fundamental", 
+	 "misc",
+	 "total", 
+	 ]) {
     Plotly.newPlot(name + "_area", {
         "data": [data[name + "_error"], data[name]],
         "layout": {
