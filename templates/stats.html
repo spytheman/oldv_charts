@@ -12,6 +12,7 @@
 	<h3 id='cgen'>Cgen, ms</h3><div id="cgen_area"></div>
 	<h3 id='fundamental'>Fundamental, ms = scan + parse + check + cgen</h3><div id="fundamental_area"></div>
 	<h3 id='misc'>Misc stages, ms = Total - Fundamental, ms</h3><div id="misc_area"></div>
+	<h3 id='residue'>Residue, ms = Total - (Fundamental + Markused + Transform) = cli arg parsing, builder overhead, etc</h3><div id="residue_area"></div>
 	<h3 id='total'>Total, ms</h3><div id="total_area"></div>
 </div>
 <script>
@@ -84,6 +85,13 @@
       d: @{measurements.map(ms(misc_stddev2(it.total.stddev,it.total_stages.stddev)))},
     },
     {
+      label: "Residue",
+      id: "residue",
+      color: "#0022AA",
+      y: @{measurements.map(ms(it.total.mean - it.total_stages.mean - it.markused.mean - it.transform.mean))},
+      d: @{measurements.map(0)},
+    },
+    {
       label: "vlines/s",
       id: "vlines_ps",
       color: "#223322",
@@ -123,8 +131,6 @@
     }
   }
 
-  console.log(data)
-
   Plotly.newPlot("stages_area", {
       "data":  ["scan", "parse", "check", "transform", "markused", "cgen"].map(x => [data[x + "_error"], data[x]]).flat(), 
       "layout": {
@@ -157,6 +163,7 @@
 	 "cgen", 
 	 "fundamental", 
 	 "misc",
+	 "residue",
 	 "total", 
 	 ]) {
     Plotly.newPlot(name + "_area", {
