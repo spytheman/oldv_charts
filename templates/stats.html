@@ -114,7 +114,7 @@ const raw_data = [
     {
         label: "V Size",
         id: "vsize",
-        color: "#F7FE21",
+        color: "#27FE21",
         y: @{measurements.map(it.vsize)},
     },
     {
@@ -206,17 +206,6 @@ for(const name of [
         }
     });
 };
-Plotly.newPlot("vsize_area", {
-    "data": [data.csize],
-    "layout": {
-        "showlegend": true,
-        "width": 1800,
-        "height": 800,
-        xaxis: {
-            type: 'date',
-        },
-    }
-});
 for(const name of [
     "vlines_ps",
     "scan",
