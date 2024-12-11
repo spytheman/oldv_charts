@@ -16,13 +16,13 @@ mut:
 	date         i64
 	tested       i64
 	csize        int
-	clines       int
 	vsize        int
+	clines       int
 	vlines       int
-	vlines_ps    Metric
 	vtypes       int
 	vmodules     int
 	vfiles       int
+	vlines_ps    Metric
 	scan         Metric
 	parse        Metric
 	check        Metric
@@ -105,7 +105,7 @@ fn get_measurements(max_n int, kind string) []Measurement {
 		m.date = row['date'].i64() * 1000 // ts in ms
 		m.tested = row['tested'].i64() * 1000 // ts in ms
 		m.csize = row['csize_mean'].int()
-		m.clines = row['csize_mean'].int()
+		m.clines = row['clines_mean'].int()
 		m.vsize = row['vsize_mean'].int()
 		m.vlines = row['vlines_mean'].int()
 		m.vlines_ps = metric(row, 'vlines_ps')

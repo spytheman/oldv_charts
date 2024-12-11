@@ -2,8 +2,14 @@
 <h1>[<a href='index.html'>index</a>] Performance stats for <i>@title</i>, @{measurements.len} commits:</h1>
 <div>
 	<h3 id='stages'>Stages, ms</h3><div id="stages_area"></div>
-	<h3 id='csize'>CSize, bytes</h3><div id="csize_area"></div>
-	<h3 id='vlines_ps'>VLines/s</h3><div id="vlines_ps_area"></div>
+	<h3 id='vlines_ps'>V lines/s</h3><div id="vlines_ps_area"></div>
+	<h3 id='csize'>C size, bytes</h3><div id="csize_area"></div>
+	<h3 id='clines'>C lines</h3><div id="clines_area"></div>
+	<h3 id='vsize'>V size, bytes</h3><div id="vsize_area"></div>
+	<h3 id='vlines'>V lines</h3><div id="vlines_area"></div>
+	<h3 id='vfiles'>V files</h3><div id="vfiles_area"></div>
+	<h3 id='vmodules'>V modules</h3><div id="vmodules_area"></div>
+	<h3 id='vtypes'>V types</h3><div id="vtypes_area"></div>
 	<h3 id='scan'>Scan, ms</h3><div id="scan_area"></div>
 	<h3 id='parse'>Parse, ms</h3><div id="parse_area"></div>
 	<h3 id='check'>Check, ms</h3><div id="check_area"></div>
@@ -16,156 +22,214 @@
 	<h3 id='total'>Total, ms</h3><div id="total_area"></div>
 </div>
 <script>
-  Plotly.setPlotConfig({locale: 'en-US'});
-  const commits = @{measurements.map("Commit: ${it.commit}")};
-  const x = @{measurements.map(it.date)};
-  const x2 = [...x, ...x.toReversed()];
-  const raw_data = [
+    Plotly.setPlotConfig({locale: 'en-US'});
+const commits = @{measurements.map("Commit: ${it.commit}")};
+const x = @{measurements.map(it.date)};
+const x2 = [...x, ...x.toReversed()];
+const raw_data = [
     {
-      label: "Scan",
-      id: "scan",
-      color: "#FFD75E",
-      y: @{measurements.map(ms(it.scan.mean))},
-      d: @{measurements.map(ms(it.scan.stddev))},
+        label: "Scan",
+        id: "scan",
+        color: "#FFD75E",
+        y: @{measurements.map(ms(it.scan.mean))},
+        d: @{measurements.map(ms(it.scan.stddev))},
     },
     {
-      label: "Parse",
-      id: "parse",
-      color: "#11FFFF",
-      y: @{measurements.map(ms(it.parse.mean))},
-      d: @{measurements.map(ms(it.parse.stddev))},
+        label: "Parse",
+        id: "parse",
+        color: "#11FFFF",
+        y: @{measurements.map(ms(it.parse.mean))},
+        d: @{measurements.map(ms(it.parse.stddev))},
     },
     {
-      label: "Check",
-      id: "check",
-      color: "#FFD75E",
-      y: @{measurements.map(ms(it.check.mean))},
-      d: @{measurements.map(ms(it.check.stddev))},
+        label: "Check",
+        id: "check",
+        color: "#FFD75E",
+        y: @{measurements.map(ms(it.check.mean))},
+        d: @{measurements.map(ms(it.check.stddev))},
     },
     {
-      label: "Transform",
-      id: "transform",
-      color: "FF8822",
-      y: @{measurements.map(ms(it.transform.mean))},
-      d: @{measurements.map(ms(it.transform.stddev))},
+        label: "Transform",
+        id: "transform",
+        color: "FF8822",
+        y: @{measurements.map(ms(it.transform.mean))},
+        d: @{measurements.map(ms(it.transform.stddev))},
     },
     {
-      label: "Markused",
-      id: "markused",
-      color: "#333333",
-      y: @{measurements.map(ms(it.markused.mean))},
-      d: @{measurements.map(ms(it.markused.stddev))},
+        label: "Markused",
+        id: "markused",
+        color: "#333333",
+        y: @{measurements.map(ms(it.markused.mean))},
+        d: @{measurements.map(ms(it.markused.stddev))},
     },
     {
-      label: "Code Generation",
-      id: "cgen",
-      color: "#FF22FF",
-      y: @{measurements.map(ms(it.cgen.mean))},
-      d: @{measurements.map(ms(it.cgen.stddev))},
+        label: "Code Generation",
+        id: "cgen",
+        color: "#FF22FF",
+        y: @{measurements.map(ms(it.cgen.mean))},
+        d: @{measurements.map(ms(it.cgen.stddev))},
     },
     {
-      label: "Total",
-      id: "total",
-      color: "#071EFF",
-      y: @{measurements.map(ms(it.total.mean))},
-      d: @{measurements.map(ms(it.total.stddev))},
+        label: "Total",
+        id: "total",
+        color: "#071EFF",
+        y: @{measurements.map(ms(it.total.mean))},
+        d: @{measurements.map(ms(it.total.stddev))},
     },
     {
-      label: "Fundamental",
-      id: "fundamental",
-      color: "#22FF22",
-      y: @{measurements.map(ms(it.total_stages.mean))},
-      d: @{measurements.map(ms(it.total_stages.stddev))},
+        label: "Fundamental",
+        id: "fundamental",
+        color: "#22FF22",
+        y: @{measurements.map(ms(it.total_stages.mean))},
+        d: @{measurements.map(ms(it.total_stages.stddev))},
     },
     {
-      label: "Misc",
-      id: "misc",
-      color: "#0022AA",
-      y: @{measurements.map(ms(it.total.mean - it.total_stages.mean))},
-      d: @{measurements.map(ms(misc_stddev2(it.total.stddev,it.total_stages.stddev)))},
+        label: "Misc",
+        id: "misc",
+        color: "#0022AA",
+        y: @{measurements.map(ms(it.total.mean - it.total_stages.mean))},
+        d: @{measurements.map(ms(misc_stddev2(it.total.stddev,it.total_stages.stddev)))},
     },
     {
-      label: "Residue",
-      id: "residue",
-      color: "#0022AA",
-      y: @{measurements.map(ms(it.total.mean - it.total_stages.mean - it.markused.mean - it.transform.mean))},
-      d: @{measurements.map(0)},
+        label: "Residue",
+        id: "residue",
+        color: "#0022AA",
+        y: @{measurements.map(ms(it.total.mean - it.total_stages.mean - it.markused.mean - it.transform.mean))},
+        d: @{measurements.map(0)},
     },
     {
-      label: "vlines/s",
-      id: "vlines_ps",
-      color: "#223322",
-      y: @{measurements.map(it.vlines_ps.mean)},
-      d: @{measurements.map(it.vlines_ps.stddev)},
+        label: "vlines/s",
+        id: "vlines_ps",
+        color: "#223322",
+        y: @{measurements.map(it.vlines_ps.mean)},
+        d: @{measurements.map(it.vlines_ps.stddev)},
+    },
+    /////////////////////////////////////////////////
+    {
+        label: "C Size",
+        id: "csize",
+        color: "#070EFF",
+        y: @{measurements.map(it.csize)},
     },
     {
-      label: "C Size",
-      id: "csize",
-      color: "#070EFF",
-      y: @{measurements.map(it.csize)},
-    }
-  ]
+        label: "V Size",
+        id: "vsize",
+        color: "#F7FE21",
+        y: @{measurements.map(it.vsize)},
+    },
+    {
+        label: "C Lines",
+        id: "clines",
+        color: "#002299",
+        y: @{measurements.map(it.clines)},
+    },
+    {
+        label: "V Lines",
+        id: "vlines",
+        color: "#FF2200",
+        y: @{measurements.map(it.vlines)},
+    },
+    {
+        label: "V Files",
+        id: "vfiles",
+        color: "#5511FF",
+        y: @{measurements.map(it.vfiles)},
+    },
+    {
+        label: "V Modules",
+        id: "vmodules",
+        color: "#5511FF",
+        y: @{measurements.map(it.vmodules)},
+    },
+    {
+        label: "V types",
+        id: "vtypes",
+        color: "#5511FF",
+        y: @{measurements.map(it.vtypes)},
+    },
+]
 
-  const data = {};
-  for(const d of raw_data) {
+const data = {};
+for(const d of raw_data) {
     data[d.id] = {
-      type: "scatter",
-      mode: "lines",
-      line: {color: d.color},
-      name: d.label,
-      x,
-      y: d.y,
-	  text: commits,
+        type: "scatter",
+        mode: "lines",
+        line: {color: d.color},
+        name: d.label,
+        x,
+        y: d.y,
+        text: commits,
     }
     if(d.d) {
-      data[d.id + "_error"] = {
-        type: "scatter",
-        name: d.label,
-        fill: "toself", 
-        fillcolor: d.color + "20", 
-        line: {color: "transparent"}, 
-        showlegend: false, 
-        x: x2,
-        y: [...d.y.map((x, i) => x + d.d[i]), ...d.y.map((x, i) => x - d.d[i]).reverse()],
-      }
+        data[d.id + "_error"] = {
+            type: "scatter",
+            name: d.label,
+            fill: "toself",
+            fillcolor: d.color + "20",
+            line: {color: "transparent"},
+            showlegend: false,
+            x: x2,
+            y: [...d.y.map((x, i) => x + d.d[i]), ...d.y.map((x, i) => x - d.d[i]).reverse()],
+        }
     }
-  }
+}
 
-  Plotly.newPlot("stages_area", {
-      "data":  ["scan", "parse", "check", "transform", "markused", "cgen"].map(x => [data[x + "_error"], data[x]]).flat(), 
-      "layout": {
-          "showlegend": true,
-          "width": 1800,
-          "height": 800,
-          xaxis: {
-              type: 'date',
-          },
-      }
-  });
-  Plotly.newPlot("csize_area", {
-      "data": [data.csize],
-      "layout": {
-          "showlegend": true,
-          "width": 1800,
-          "height": 800,
-          xaxis: {
-              type: 'date',
-          },
-      }
-  });
-  for(const name of [
-     "vlines_ps",
-	 "scan", 
-	 "parse", 
-	 "check",
-     "transform", 
-	 "markused", 
-	 "cgen", 
-	 "fundamental", 
-	 "misc",
-	 "residue",
-	 "total", 
-	 ]) {
+Plotly.newPlot("stages_area", {
+    "data":  ["scan", "parse", "check", "transform", "markused", "cgen"].map(x => [data[x + "_error"], data[x]]).flat(),
+    "layout": {
+        "showlegend": true,
+        "width": 1800,
+        "height": 800,
+        xaxis: {
+            type: 'date',
+        },
+    }
+});
+for(const name of [
+    "vfiles",
+    "vmodules",
+    "vtypes",
+    "vsize",
+    "csize",
+    "vlines",
+    "clines",
+]) {
+    Plotly.newPlot(name + "_area", {
+        "data": [data[name]],
+        "layout": {
+            "showlegend": true,
+            "width": 1800,
+            "height": 800,
+            xaxis: {
+                type: 'date',
+            },
+        }
+    });
+};
+Plotly.newPlot("vsize_area", {
+    "data": [data.csize],
+    "layout": {
+        "showlegend": true,
+        "width": 1800,
+        "height": 800,
+        xaxis: {
+            type: 'date',
+        },
+    }
+});
+for(const name of [
+    "vlines_ps",
+    "scan",
+    "parse",
+    "check",
+    "transform",
+    "markused",
+    "cgen",
+    "fundamental",
+    "misc",
+    "residue",
+    "total",
+]) {
     Plotly.newPlot(name + "_area", {
         "data": [data[name + "_error"], data[name]],
         "layout": {
