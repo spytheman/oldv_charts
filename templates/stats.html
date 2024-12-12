@@ -1,5 +1,11 @@
 @include 'header.html'
-<h1>[<a href='index.html'>index</a>] Performance stats for <i>@title</i>, @{measurements.len} commits:</h1>
+<h1>[<a href='index.html'>index</a>]
+Performance stats for <i>@title</i> ,
+@{measurements.len} commits
+@if ndays>0
+, last @ndays days
+@end
+:</h1>
 <div>
 	<h3 id='stages'>Stages, ms</h3><div id="stages_area"></div>
 	<h3 id='vlines_ps'>V lines/s</h3><div id="vlines_ps_area"></div>

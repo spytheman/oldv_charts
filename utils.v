@@ -1,6 +1,7 @@
 module main
 
 import math
+import time
 import db.sqlite
 
 struct Metric {
@@ -77,7 +78,8 @@ fn metric_ms(row map[string]string, name string) Metric {
 	}
 }
 
-fn get_measurements(max_n int, kind string) []Measurement {
+fn get_measurements(max_n int, kind string, ndays int) []Measurement {
+	cutoff_ts := if ndays <= 0 { 0 } else { time.utc().add(-ndays * 24 * time.hour).unix() }
 	mut res := []Measurement{}
 	mut db := sqlite.connect(db_file) or { panic(err) }
 	rows := exec_map(mut db, 'SELECT
@@ -95,7 +97,7 @@ fn get_measurements(max_n int, kind string) []Measurement {
                                  total_min, total_max, total_mean, total_stddev
                               FROM commits
                               LEFT JOIN `measurements` ON commits.${kind} = measurements.id
-                              WHERE commits.state = 1 AND commits.v_self_skip_unused_id IS NOT NULL AND commits.date > 1704063600
+                              WHERE commits.state = 1 AND commits.v_self_skip_unused_id IS NOT NULL AND commits.date > ${cutoff_ts}
                               ORDER BY date desc
                               LIMIT 0,${max_n}
                               ')

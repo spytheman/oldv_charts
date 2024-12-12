@@ -3,7 +3,7 @@ module main
 import os
 import net.http { Request, Response, Server }
 
-const max_points = 20_000
+const max_points = 60_000
 
 const db_file = os.getenv_opt('FAST_DB') or { 'data.sqlite' }
 
@@ -24,25 +24,27 @@ const index_links = {
 pub struct App {
 	dynamic bool
 mut:
-	pages map[string]string
+	pages       map[string]string
+	index_links map[string]ILink
 }
 
-fn get_stats(title string, kind string) string {
-	measurements := get_measurements(max_points, kind)
+fn get_stats(title string, kind string, ndays int) string {
+	measurements := get_measurements(max_points, kind, ndays)
 	res := $tmpl('templates/stats.html')
 	return res
 }
 
-fn get_index() string {
+fn (app &App) get_index() string {
 	title := 'All stats'
+	links := app.index_links.clone()
 	return $tmpl('templates/index.html')
 }
 
-fn (app App) router(path string) ?string {
+fn (app &App) router(path string) ?string {
 	println('rendering ${path}')
 	match path {
 		'/', '/index.html' {
-			return get_index()
+			return app.get_index()
 		}
 		'/data.sqlite' {
 			return os.read_file(db_file) or { return none }
@@ -51,20 +53,47 @@ fn (app App) router(path string) ?string {
 			return os.read_file('favicon.ico') or { return none }
 		}
 		else {
-			if ilink := index_links[path] {
-				return get_stats(ilink.cmd, ilink.db_column)
+			if ilink := app.index_links[path] {
+				ndays := path.all_before('.html').all_after_last('.').int()
+				return get_stats(ilink.cmd, ilink.db_column, ndays)
 			}
 			return none
 		}
 	}
 }
 
+fn (mut app App) add_set(ndays int, keys []string) []string {
+	mut pages := []string{}
+	app.index_links['<h2>Last ${ndays} days:</h2>'] = ILink{}
+	for k in keys {
+		pk := k.replace('.html', '.${ndays}.html')
+		pages << pk
+		app.index_links[pk] = index_links[k]
+	}
+	return pages
+}
+
+fn (mut app App) build_index_links() []string {
+	mut pages := []string{}
+	keys := index_links.keys()
+	pages << app.add_set(7, keys)
+	pages << app.add_set(30, keys)
+	pages << app.add_set(120, keys)
+	pages << app.add_set(365, keys)
+	app.index_links['<h2>No limit:</h2>'] = ILink{}
+	pages << keys
+	for k, v in index_links {
+		app.index_links[k] = v
+	}
+	return pages
+}
+
 fn (mut app App) generate() ! {
+	mut pages := ['/', '/index.html', '/data.sqlite', '/favicon.ico']
+	pages << app.build_index_links()
 	if app.dynamic {
 		return
 	}
-	mut pages := ['/', '/index.html', '/data.sqlite', '/favicon.ico']
-	pages << index_links.keys()
 	for url_prefix in pages {
 		app.pages['output${url_prefix}'] = app.router(url_prefix) or {
 			panic('failed to pre-render `${url_prefix}`, error: ${err}')

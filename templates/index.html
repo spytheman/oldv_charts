@@ -1,7 +1,10 @@
 @include 'header.html'
 <h1>Stats from compilations of previous V versions, using cmd/tools/oldv.v</h1>
 
-@for i, data in index_links
+@for i, data in links
+@if i[0] == `<`
+@i
+@else
 <br><a href="@{i#[1..]}">@data.cmd</a>,
 [<a href="@{i#[1..]}#vlines_ps">vlines_ps</a>],
 [<a href="@{i#[1..]}#scan">scan</a>],
@@ -13,6 +16,7 @@
 [<a href="@{i#[1..]}#total">total</a>]
 <br>
 <br>
+@end
 @end
 
 <hr>
