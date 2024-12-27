@@ -97,7 +97,7 @@ fn get_measurements(max_n int, kind string, ndays int) []Measurement {
                                  total_min, total_max, total_mean, total_stddev
                               FROM commits
                               LEFT JOIN `measurements` ON commits.${kind} = measurements.id
-                              WHERE commits.state = 1 AND commits.v_self_skip_unused_id IS NOT NULL AND commits.date > ${cutoff_ts}
+                              WHERE commits.state = 1 AND commits.${kind} IS NOT NULL AND commits.date > ${cutoff_ts}
                               ORDER BY date desc
                               LIMIT 0,${max_n}
                               ')
