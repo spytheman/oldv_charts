@@ -36,7 +36,10 @@ mut:
 
 fn exec_map(mut db sqlite.DB, query string) []map[string]string {
 	rows := db.exec(query) or { panic(err) }
-	mut res := []map[string]string{}
+	defer {
+		unsafe { rows.free() }
+	}
+	mut res := []map[string]string{cap: rows.len}
 	columns := query.all_after('SELECT')
 		.all_before('FROM')
 		.split(',').map(it.replace('`', ' ')
@@ -52,12 +55,23 @@ fn exec_map(mut db sqlite.DB, query string) []map[string]string {
 }
 
 fn metric(row map[string]string, name string) Metric {
-	return Metric{
-		min:    row['${name}_min'].i64()
-		max:    row['${name}_max'].i64()
-		mean:   row['${name}_mean'].i64()
-		stddev: row['${name}_stddev'].i64()
+	kmin := '${name}_min'
+	kmax := '${name}_max'
+	kmean := '${name}_mean'
+	kstddev := '${name}_stddev'
+	res := Metric{
+		min:    row[kmin].i64()
+		max:    row[kmax].i64()
+		mean:   row[kmean].i64()
+		stddev: row[kstddev].i64()
 	}
+	unsafe {
+		kstddev.free()
+		kmean.free()
+		kmax.free()
+		kmin.free()
+	}
+	return res
 }
 
 fn metric_us(row map[string]string, name string) Metric {
@@ -82,6 +96,9 @@ fn get_measurements(max_n int, kind string, ndays int) []Measurement {
 	cutoff_ts := if ndays <= 0 { 0 } else { time.utc().add(-ndays * 24 * time.hour).unix() }
 	mut res := []Measurement{}
 	mut db := sqlite.connect(db_file) or { panic(err) }
+	defer {
+		db.close() or {}
+	}
 	rows := exec_map(mut db, 'SELECT
                                  commit_hash, state, ${kind}, date, tested,
                                  csize_mean, clines_mean,
