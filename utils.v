@@ -4,6 +4,19 @@ import math
 import time
 import db.sqlite
 
+const html_chars = ['"', '_', "'", '_', '<', '_', '>', '_', '\n', ' '] // replace all " characters and other potentially breaking ones
+
+fn clean_title(s string) string {
+	res := s.clone()
+	for i:=0;i<s.len;i++ {
+		c := s[i]
+		if (c >= `A` && c <= `Z`) || (c >= `a` && c <= `z`) || (c >= `0` && c <=`9`) || (c in [` `, `_`, `=`, `-`, `+`, `*`, `/`, `:`, `,`, `.`, `{`, `}`, `[`, `]`, `(`, `)`, `\``, ]) {
+			continue
+		}
+		unsafe { res.str[i] = ` ` }
+	}
+	return res
+}
 struct Metric {
 	min    i64
 	max    i64
@@ -14,6 +27,7 @@ struct Metric {
 struct Measurement {
 mut:
 	commit       string
+	title        string
 	date         i64
 	tested       i64
 	csize        int
@@ -100,7 +114,7 @@ fn get_measurements(max_n int, kind string, ndays int) []Measurement {
 		db.close() or {}
 	}
 	rows := exec_map(mut db, 'SELECT
-                                 commit_hash, state, ${kind}, date, tested,
+                                 commit_hash, commit_title, state, ${kind}, date, tested,
                                  csize_mean, clines_mean,
                                  vsize_mean, vlines_mean, vtypes_mean, vmodules_mean, vfiles_mean,
                                  vlines_ps_min, vlines_ps_max, vlines_ps_mean, vlines_ps_stddev,
@@ -119,8 +133,10 @@ fn get_measurements(max_n int, kind string, ndays int) []Measurement {
                               LIMIT 0,${max_n}
                               ')
 	for row in rows {
+		commit := row['commit_hash']
 		mut m := Measurement{}
-		m.commit = row['commit_hash']
+		m.title = clean_title(row['commit_title'])
+		m.commit = '<a href="https://github.com/vlang/v/commit/${commit}">${commit}<br>${m.title}</a>'
 		m.date = row['date'].i64() * 1000 // ts in ms
 		m.tested = row['tested'].i64() * 1000 // ts in ms
 		m.csize = row['csize_mean'].int()

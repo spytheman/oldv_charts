@@ -6,6 +6,7 @@ Performance stats for <i>@title</i> ,
 , last @ndays days
 @end
 :</h1>
+<center class="hint">Click on a point to add an annotation</center>
 <div>
 	<h3 id='stages'>Stages, ms</h3><div id="stages_area"></div>
 	<h3 id='vlines_ps'>V lines/s</h3><div id="vlines_ps_area"></div>
@@ -28,11 +29,38 @@ Performance stats for <i>@title</i> ,
 	<h3 id='total'>Total, ms</h3><div id="total_area"></div>
 </div>
 <script>
-    Plotly.setPlotConfig({locale: 'en-US'});
-const commits = @{measurements.map("Commit: ${it.commit}")};
+Plotly.setPlotConfig({locale: 'en-US'});
+
+function new_annotation_cb(plot_id){
+	console.log(plot_id);
+	var annotations = [];
+	return function(data) {
+		console.log(data);
+		console.log(plot_id);
+		var pts = '';	
+	    for(var i=0; i < data.points.length; i++){
+		    var x = data.points[i].x;
+			var y = data.points[i].y;
+	        atext = data.points[i].text + '<br>'+ x;
+			annotation = {
+				text: atext,
+				x: x,
+				y: y,
+	        }
+	        annotations.push(annotation);
+			console.log(annotations);
+	        Plotly.relayout(plot_id, {annotations: annotations});
+	    }	
+	};
+}	
+function add_click_handler(zone) { document.getElementById(zone).on('plotly_click', new_annotation_cb(zone)); }
+
+var aname = "";
+
+const commits = @{measurements.map(it.commit)};
 const x = @{measurements.map(it.date)};
 const x2 = [...x, ...x.toReversed()];
-const raw_data = [
+const charts = [
     {
         label: "Scan",
         id: "scan",
@@ -156,7 +184,7 @@ const raw_data = [
 ]
 
 const data = {};
-for(const d of raw_data) {
+for(const d of charts) {
     data[d.id] = {
         type: "scatter",
         mode: "lines",
@@ -183,14 +211,15 @@ for(const d of raw_data) {
 Plotly.newPlot("stages_area", {
     "data":  ["scan", "parse", "check", "transform", "markused", "cgen"].map(x => [data[x + "_error"], data[x]]).flat(),
     "layout": {
+        hovermode: "closest",
         "showlegend": true,
         "width": 1800,
         "height": 800,
-        xaxis: {
-            type: 'date',
-        },
+        xaxis: { type: 'date', },
     }
 });
+add_click_handler("stages_area");
+
 for(const name of [
     "vfiles",
     "vmodules",
@@ -200,9 +229,11 @@ for(const name of [
     "vlines",
     "clines",
 ]) {
-    Plotly.newPlot(name + "_area", {
+	aname = name + "_area";
+    Plotly.newPlot(aname, {
         "data": [data[name]],
         "layout": {
+            hovermode: "closest",
             "showlegend": true,
             "width": 1800,
             "height": 800,
@@ -211,6 +242,7 @@ for(const name of [
             },
         }
     });
+	add_click_handler(aname);
 };
 for(const name of [
     "vlines_ps",
@@ -225,9 +257,11 @@ for(const name of [
     "residue",
     "total",
 ]) {
-    Plotly.newPlot(name + "_area", {
+	aname = name + "_area";
+    Plotly.newPlot(aname, {
         "data": [data[name + "_error"], data[name]],
         "layout": {
+            hovermode: "closest",
             "showlegend": true,
             "width": 1800,
             "height": 800,
@@ -235,7 +269,8 @@ for(const name of [
                 type: 'date',
             },
         }
-    });
+    });	
+	add_click_handler(aname);	
   }
 </script>
 @include 'footer.html'
