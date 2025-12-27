@@ -20,12 +20,13 @@ Performance stats for <i>@title</i> ,
 	<h3 id='scan'>Scan, ms</h3><div id="scan_area"></div>
 	<h3 id='parse'>Parse, ms</h3><div id="parse_area"></div>
 	<h3 id='check'>Check, ms</h3><div id="check_area"></div>
+	<h3 id='comptime'>Comptime, ms</h3><div id="comptime_area"></div>
 	<h3 id='transform'>Transform, ms</h3><div id="transform_area"></div>
 	<h3 id='markused'>Markused, ms</h3><div id="markused_area"></div>
 	<h3 id='cgen'>Cgen, ms</h3><div id="cgen_area"></div>
 	<h3 id='fundamental'>Fundamental, ms = scan + parse + check + cgen</h3><div id="fundamental_area"></div>
 	<h3 id='misc'>Misc stages, ms = Total - Fundamental, ms</h3><div id="misc_area"></div>
-	<h3 id='residue'>Residue, ms = Total - (Fundamental + Markused + Transform) = cli arg parsing, builder overhead, etc</h3><div id="residue_area"></div>
+	<h3 id='residue'>Residue, ms = Total - (Fundamental + Markused + Transform + Comptime) = cli arg parsing, builder overhead, etc</h3><div id="residue_area"></div>
 	<h3 id='total'>Total, ms</h3><div id="total_area"></div>
 </div>
 <script>
@@ -71,7 +72,7 @@ const charts = [
     {
         label: "Parse",
         id: "parse",
-        color: "#11FFFF",
+        color: "#11208F",
         y: @{measurements.map(ms(it.parse.mean))},
         d: @{measurements.map(ms(it.parse.stddev))},
     },
@@ -83,9 +84,16 @@ const charts = [
         d: @{measurements.map(ms(it.check.stddev))},
     },
     {
+        label: "Comptime",
+        id: "comptime",
+        color: "#1FA882",
+        y: @{measurements.map(ms(it.comptime.mean))},
+        d: @{measurements.map(ms(it.comptime.stddev))},
+    },
+    {
         label: "Transform",
         id: "transform",
-        color: "FF8822",
+        color: "#FF8822",
         y: @{measurements.map(ms(it.transform.mean))},
         d: @{measurements.map(ms(it.transform.stddev))},
     },
@@ -128,7 +136,7 @@ const charts = [
         label: "Residue",
         id: "residue",
         color: "#0022AA",
-        y: @{measurements.map(ms(it.total.mean - it.total_stages.mean - it.markused.mean - it.transform.mean))},
+        y: @{measurements.map(ms(it.total.mean - it.total_stages.mean - it.markused.mean - it.transform.mean - it.comptime.mean))},
         d: @{measurements.map(0)},
     },
     {
@@ -209,7 +217,7 @@ for(const d of charts) {
 }
 
 Plotly.newPlot("stages_area", {
-    "data":  ["scan", "parse", "check", "transform", "markused", "cgen"].map(x => [data[x + "_error"], data[x]]).flat(),
+    "data":  ["scan", "parse", "check", "comptime", "transform", "markused", "cgen"].map(x => [data[x + "_error"], data[x]]).flat(),
     "layout": {
         hovermode: "closest",
         "showlegend": true,
@@ -249,6 +257,7 @@ for(const name of [
     "scan",
     "parse",
     "check",
+    "comptime",
     "transform",
     "markused",
     "cgen",

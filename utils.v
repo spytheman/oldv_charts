@@ -41,6 +41,7 @@ mut:
 	scan         Metric
 	parse        Metric
 	check        Metric
+	comptime     Metric
 	transform    Metric
 	markused     Metric
 	cgen         Metric
@@ -121,6 +122,7 @@ fn get_measurements(max_n int, kind string, ndays int) []Measurement {
                                  scan_min, scan_max, scan_mean, scan_stddev,
                                  parse_min, parse_max, parse_mean, parse_stddev,
                                  check_min, check_max, check_mean, check_stddev,
+                                 comptime_min, comptime_max, comptime_mean, comptime_stddev,
                                  transform_min, transform_max, transform_mean, transform_stddev,
                                  markused_min, markused_max, markused_mean, markused_stddev,
                                  cgen_min, cgen_max, cgen_mean, cgen_stddev,
@@ -150,6 +152,7 @@ fn get_measurements(max_n int, kind string, ndays int) []Measurement {
 		m.scan = metric(row, 'scan')
 		m.parse = metric(row, 'parse')
 		m.check = metric(row, 'check')
+		m.comptime = metric(row, 'comptime')
 		m.transform = metric(row, 'transform')
 		m.markused = metric(row, 'markused')
 		m.cgen = metric(row, 'cgen')
