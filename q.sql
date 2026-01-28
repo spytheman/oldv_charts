@@ -15,6 +15,11 @@ comptime_min, comptime_max, comptime_mean, comptime_stddev,
 transform_min, transform_max, transform_mean, transform_stddev,
 markused_min, markused_max, markused_mean, markused_stddev,
 cgen_min, cgen_max, cgen_mean, cgen_stddev,
+
+tl_stmts_mean int,
+main_tl_stmts_mean int,
+non_vlib_tl_stmts_mean int,
+
 total_stages_min, total_stages_max, total_stages_mean, total_stages_stddev,
 total_min, total_max, total_mean, total_stddev
 FROM commits

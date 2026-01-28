@@ -17,6 +17,9 @@ Performance stats for <i>@title</i> ,
 	<h3 id='vfiles'>V files</h3><div id="vfiles_area"></div>
 	<h3 id='vmodules'>V modules</h3><div id="vmodules_area"></div>
 	<h3 id='vtypes'>V types</h3><div id="vtypes_area"></div>
+	<h3 id='tl_stmts'>Top Level Statements(TLS)</h3><div id="tl_stmts_area"></div>
+	<h3 id='tl_nvlib'>TLS excluding vlib</h3><div id="tl_nvlib_area"></div>
+	<h3 id='tl_main'>TLS only in main</h3><div id="tl_main_area"></div>
 	<h3 id='scan'>Scan, ms</h3><div id="scan_area"></div>
 	<h3 id='parse'>Parse, ms</h3><div id="parse_area"></div>
 	<h3 id='check'>Check, ms</h3><div id="check_area"></div>
@@ -189,6 +192,24 @@ const charts = [
         color: "#5511FF",
         y: @{measurements.map(it.vtypes)},
     },
+    {
+        label: "Top Level Statements",
+        id: "tl_stmts",
+        color: "#5511FF",
+        y: @{measurements.map(it.tl_stmts)},
+    },
+    {
+        label: "TLS in non vlib modules",
+        id: "tl_nvlib",
+        color: "#5511FF",
+        y: @{measurements.map(it.tl_nvlib)},
+    },
+    {
+        label: "TLS in main module",
+        id: "tl_main",
+        color: "#5511FF",
+        y: @{measurements.map(it.tl_main)},
+    },
 ]
 
 const data = {};
@@ -232,6 +253,9 @@ for(const name of [
     "vfiles",
     "vmodules",
     "vtypes",
+    "tl_stmts",
+    "tl_nvlib",
+    "tl_main",
     "vsize",
     "csize",
     "vlines",

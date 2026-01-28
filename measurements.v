@@ -16,6 +16,9 @@ mut:
 	vtypes       int
 	vmodules     int
 	vfiles       int
+	tl_stmts     int
+	tl_nvlib     int
+	tl_main      int
 	vlines_ps    Metric
 	scan         Metric
 	parse        Metric
@@ -39,6 +42,7 @@ fn get_measurements(max_n int, kind string, ndays int) []Measurement {
                                  commit_hash, commit_title, state, ${kind}, date, tested,
                                  csize_mean, clines_mean,
                                  vsize_mean, vlines_mean, vtypes_mean, vmodules_mean, vfiles_mean,
+                                 tl_stmts_mean, non_vlib_tl_stmts_mean, main_tl_stmts_mean, 
                                  vlines_ps_min, vlines_ps_max, vlines_ps_mean, vlines_ps_stddev,
                                  scan_min, scan_max, scan_mean, scan_stddev,
                                  parse_min, parse_max, parse_mean, parse_stddev,
@@ -70,6 +74,9 @@ fn get_measurements(max_n int, kind string, ndays int) []Measurement {
 		m.vtypes = row['vtypes_mean'].int()
 		m.vmodules = row['vmodules_mean'].int()
 		m.vfiles = row['vfiles_mean'].int()
+		m.tl_stmts = row['tl_stmts_mean'].int()
+		m.tl_nvlib = row['non_vlib_tl_stmts_mean'].int()
+		m.tl_main = row['main_tl_stmts_mean'].int()
 		m.scan = metric(row, 'scan')
 		m.parse = metric(row, 'parse')
 		m.check = metric(row, 'check')
